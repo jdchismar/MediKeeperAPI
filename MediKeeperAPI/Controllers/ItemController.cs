@@ -49,8 +49,8 @@ namespace MediKeeperAPI.Controllers
             return i;
         }
 
-        [HttpPost]
-        [Route("api/v1/UpdateItem")]
+        [HttpPut]
+        [Route("api/v1/Item")]
         public void UpdateItem(string id, string name, string cost)
         {
             Item item = new Item { ID = id, ItemName = name, Cost = Convert.ToDecimal(cost) };
@@ -61,7 +61,7 @@ namespace MediKeeperAPI.Controllers
         }
 
         [HttpPost]
-        [Route("api/v1/CreateItem")]
+        [Route("api/v1/Item")]
         public void CreateItem(string id, string name, string cost)
         {
             Item item = new Item { ID = id, ItemName = name, Cost = Convert.ToDecimal(cost) };
@@ -71,8 +71,8 @@ namespace MediKeeperAPI.Controllers
             dao.CreateItem(item);
         }
 
-        [HttpPost]
-        [Route("api/v1/DeleteItem")]
+        [HttpDelete]
+        [Route("api/v1/Item")]
         public void DeleteItem(string id)
         {
             IDataAccess dao = new FlatfileDAO();
