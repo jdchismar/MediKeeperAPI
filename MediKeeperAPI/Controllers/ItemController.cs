@@ -2,51 +2,88 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using DataAccess;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Manager;
-using DataAccess.Models;
 
 namespace MediKeeperAPI.Controllers
 {
-    [Route("api/[controller]")]
+
     [ApiController]
     public class ItemController : ControllerBase
     {
-        // GET: api/Item
         [HttpGet]
-        public IEnumerable<string> Get()
+        [Route("api/v1/GetItems")]
+        public ItemCollection GetItems()
         {
-            ItemManager ItemMgr = new ItemManager();
-            List<Item> res = ItemMgr.GetItems();
-
-            return new string[] { "value1", "value2" };
-
+            return GetAllItems();
         }
 
-        // GET: api/Item/5
-        [HttpGet("{id}", Name = "Get")]
-        public string Get(int id)
+        [HttpGet]
+        [Route("api/v1/GetMaxItems")]
+        public ItemCollection GetMaxItems()
         {
-            return "value";
+            ItemCollection items = GetAllItems();
+            ItemCollection res = new ItemCollection();
+
+            res.ItemCol = items.ItemCol.GroupBy(item => item.ItemName)
+                .Select(group => group.OrderByDescending(groupElement => groupElement.Cost)
+                .First()).ToList();
+
+            return res;
         }
 
-        // POST: api/Item
+        [HttpGet]
+        [Route("api/v1/GetMaxCostByItemName")]
+        public Item GetMaxCostByItemName(string ItemName)
+        {
+            ItemCollection items = GetAllItems();
+            ItemCollection res = new ItemCollection();
+
+            List<Item> lsItem = items.ItemCol.GroupBy(item => item.ItemName)
+                .Select(group => group.OrderByDescending(groupElement => groupElement.Cost)
+                .First()).ToList();
+            
+            Item i = lsItem.Where(x => x.ItemName == ItemName).FirstOrDefault();
+
+            return i;
+        }
+
         [HttpPost]
-        public void Post([FromBody] string value)
+        [Route("api/v1/UpdateItem")]
+        public void UpdateItem(string id, string name, string cost)
         {
+            Item item = new Item { ID = id, ItemName = name, Cost = Convert.ToDecimal(cost) };
+
+            IDataAccess dao = new FlatfileDAO();
+
+            dao.UpdateItem(item);
         }
 
-        // PUT: api/Item/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        [HttpPost]
+        [Route("api/v1/CreateItem")]
+        public void CreateItem(string id, string name, string cost)
         {
+            Item item = new Item { ID = id, ItemName = name, Cost = Convert.ToDecimal(cost) };
+
+            IDataAccess dao = new FlatfileDAO();
+
+            dao.CreateItem(item);
         }
 
-        // DELETE: api/ApiWithActions/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
+        [HttpPost]
+        [Route("api/v1/DeleteItem")]
+        public void DeleteItem(string id)
         {
+            IDataAccess dao = new FlatfileDAO();
+
+            dao.DeleteItem(id);
+        }
+
+        private ItemCollection GetAllItems()
+        {
+            IDataAccess dao = new FlatfileDAO();
+            return dao.GetItems();
         }
     }
 }
