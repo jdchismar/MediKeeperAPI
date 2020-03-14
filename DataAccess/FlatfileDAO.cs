@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace DataAccess
 {
@@ -43,6 +44,11 @@ namespace DataAccess
         public void CreateItem(Item itemIn)
         {
             ItemCollection res = GetItems();
+            //Increment the highest Id
+            int id = res.ItemCol.Select(m => Convert.ToInt32(m.ID)).Max();
+            id++;
+            itemIn.ID = (id).ToString().PadLeft(3, '0');
+
             res.ItemCol.Add(itemIn);
             WriteToFile(res);
         }

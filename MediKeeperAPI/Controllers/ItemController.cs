@@ -12,6 +12,13 @@ namespace MediKeeperAPI.Controllers
     [ApiController]
     public class ItemController : ControllerBase
     {
+        private IDataAccess dao;
+
+        public ItemController()
+        {
+            dao = new FlatfileDAO();
+        }
+
         [HttpGet]
         [Route("api/v1/GetItems")]
         public ItemCollection GetItems()
@@ -21,68 +28,97 @@ namespace MediKeeperAPI.Controllers
 
         [HttpGet]
         [Route("api/v1/GetMaxItems")]
-        public ItemCollection GetMaxItems()
+        public IActionResult GetMaxItems()
         {
-            ItemCollection items = GetAllItems();
-            ItemCollection res = new ItemCollection();
+            try
+            {
+                ItemCollection items = GetAllItems();
+                ItemCollection res = new ItemCollection();
 
-            res.ItemCol = items.ItemCol.GroupBy(item => item.ItemName)
-                .Select(group => group.OrderByDescending(groupElement => groupElement.Cost)
-                .First()).ToList();
+                res.ItemCol = items.ItemCol.GroupBy(item => item.ItemName)
+                    .Select(group => group.OrderByDescending(groupElement => groupElement.Cost)
+                    .First()).ToList();
 
-            return res;
+                return Ok(res);
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpGet]
         [Route("api/v1/GetMaxCostByItemName")]
-        public Item GetMaxCostByItemName(string ItemName)
+        public IActionResult GetMaxCostByItemName(string ItemName)
         {
             ItemCollection items = GetAllItems();
             ItemCollection res = new ItemCollection();
 
-            List<Item> lsItem = items.ItemCol.GroupBy(item => item.ItemName)
-                .Select(group => group.OrderByDescending(groupElement => groupElement.Cost)
-                .First()).ToList();
-            
-            Item i = lsItem.Where(x => x.ItemName == ItemName).FirstOrDefault();
+            try
+            {
+                List<Item> lsItem = items.ItemCol.GroupBy(item => item.ItemName)
+                    .Select(group => group.OrderByDescending(groupElement => groupElement.Cost)
+                    .First()).ToList();
 
-            return i;
+                Item i = lsItem.Where(x => x.ItemName == ItemName).FirstOrDefault();
+                return Ok(i);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }            
         }
 
         [HttpPut]
         [Route("api/v1/Item")]
-        public void UpdateItem(string id, string name, string cost)
+        public IActionResult Update(string id, string name, string cost)
         {
             Item item = new Item { ID = id, ItemName = name, Cost = Convert.ToDecimal(cost) };
-
-            IDataAccess dao = new FlatfileDAO();
-
-            dao.UpdateItem(item);
+            try
+            {               
+                dao.UpdateItem(item);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpPost]
         [Route("api/v1/Item")]
-        public void CreateItem(string id, string name, string cost)
+        public IActionResult Create(string id, string name, string cost)
         {
-            Item item = new Item { ID = id, ItemName = name, Cost = Convert.ToDecimal(cost) };
+            Item item = new Item { ItemName = name, Cost = Convert.ToDecimal(cost) };
 
-            IDataAccess dao = new FlatfileDAO();
-
-            dao.CreateItem(item);
+            try
+            {
+                dao.CreateItem(item);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpDelete]
         [Route("api/v1/Item")]
-        public void DeleteItem(string id)
+        public IActionResult Delete(string id)
         {
-            IDataAccess dao = new FlatfileDAO();
-
-            dao.DeleteItem(id);
+            try
+            { 
+                dao.DeleteItem(id);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         private ItemCollection GetAllItems()
         {
-            IDataAccess dao = new FlatfileDAO();
             return dao.GetItems();
         }
     }
