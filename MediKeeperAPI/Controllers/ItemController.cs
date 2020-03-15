@@ -21,9 +21,17 @@ namespace MediKeeperAPI.Controllers
 
         [HttpGet]
         [Route("api/v1/GetItems")]
-        public ItemCollection GetItems()
+        public IActionResult GetItems()
         {
-            return GetAllItems();
+            try
+            { 
+                ItemCollection res = GetAllItems();
+                return Ok(res);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpGet]

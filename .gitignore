@@ -7,3 +7,5 @@
 /MediKeeperAPI/bin/Debug/netcoreapp2.1
 /MediKeeperAPI/obj
 /DataAccess/bin/Debug/netcoreapp2.1
+/DataAccess/bin
+/MediKeeperAPI/bin
